@@ -5,6 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -12,5 +13,9 @@
   "devDependencies": {
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pdfkit-table": "^0.1.99"
   }
 }
