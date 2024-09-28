@@ -94,7 +94,7 @@ class Pdf {
       .strokeColor('gray')
       .stroke()
 
-    pdfDocument.image('./assets/logo.jpg', 390, topPosition + 25, {
+    pdfDocument.image('./src/assets/logo.jpg', 390, topPosition + 25, {
       // fit: [100, 100],
       width: 150
     })
@@ -137,8 +137,8 @@ class Pdf {
         products[i].description,
         products[i].amount,
         products[i].units,
-        `${formateadorMXN.format(products[i].price)}`,
-        `${formateadorMXN.format(products[i].amount * products[i].price)}`
+        `${formateadorMXN.format(products[i].price).replace('$', '$ ')}`,
+        `${formateadorMXN.format(products[i].amount * products[i].price).replace('$', '$ ')}`
       )
       granArray.push(array)
     }
@@ -167,12 +167,12 @@ class Pdf {
       })
     pdfDocument
       .font('Helvetica-Bold')
-      .text(`Subtotal ${formateadorMXN.format(calculateSubTotal(products))}`, {
+      .text(`Subtotal ${formateadorMXN.format(calculateSubTotal(products)).replace('$', '$ ')}`, {
         align: 'right',
         lineGap: 5
       })
     pdfDocument.text(
-      `IVA ${formateadorMXN.format(calculateIVA(calculateSubTotal(products)))}`,
+      `IVA ${formateadorMXN.format(calculateIVA(calculateSubTotal(products))).replace('$', '$ ')}`,
       {
         align: 'right',
         lineGap: 5
@@ -181,7 +181,7 @@ class Pdf {
     pdfDocument.text(
       `TOTAL ${formateadorMXN.format(
         calculateTotal(calculateSubTotal(products))
-      )}`,
+      ).replace('$', '$ ')}`,
       {
         align: 'right'
       }

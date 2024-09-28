@@ -1,15 +1,14 @@
 import express from 'express'
 import pdfRouter from './routes/pdf.routes.js'
 import prueba from './routes/dbProducts.routes.js'
+import cors from 'cors'
 const app = express()
 
 const PORT = 3000
 
+app.use(cors())
 app.use(express.json())
 app.use(prueba)
-app.get('/', (req, res) => {
-  res.send('Fernando y las cosas de la web')
-})
 app.use(pdfRouter)
 
 app.listen(PORT)
