@@ -1,18 +1,21 @@
 import express from 'express'
+import AuthenticationService from '../services/AuthenticationService.js'
 const router = express.Router()
-const db = {
-  user: 'root',
-  password: '12345'
-}
+const auth = new AuthenticationService()
 
-router.post('/login', (req, res) => {
-  if (req.body.user === db.user && req.body.password === db.password) {
-    res.cookie('token', 'aaaa').send('Te has logeado correctamente')
+router.post('/login', async (req, res) => {
+  const isAuth = await auth.logIn(req.body.username, req.body.password)
+  if (isAuth) {
+    const objToSign = { username: req.body.username }
+    const token = auth.getToken(objToSign)
+    res.cookie('token', token, {
+      httpOnly: true,
+      sameSite: 'lax'
+    }).json({ message: 'Lo que sea' })
   } else {
-    res.status(401).send('Unauthorized')
+    res.status(401).json('Te logeaste correctamente')
   }
 })
-router.post('/signIn', (req, res) => {
-})
+router.post('/signIn', (req, res) => {})
 
 export default router

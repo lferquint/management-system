@@ -12,6 +12,9 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0"
   },

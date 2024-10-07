@@ -62,7 +62,7 @@ class Pdf {
       .moveDown()
       .moveDown()
       .text(
-        `Por medio de la presente ponemos a su atenta consideracion la cotizacion de ${objHeaders.company}`
+        'Por medio de la presente ponemos a su atenta consideracion la cotizacion solicitada.'
       )
     pdfDocument.moveDown().text(`Obra: ${objHeaders.place}`)
   }
