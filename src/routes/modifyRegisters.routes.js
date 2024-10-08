@@ -6,7 +6,7 @@ import connection from '../libs/db.js'
 const dbManager = new DbService()
 const router = express.Router()
 
-router.use(authenticationMiddleWare)
+router.use('/protected', authenticationMiddleWare)
 
 router.get('/protected', (req, res) => {
   res.send(
@@ -74,15 +74,30 @@ router.post('/addProduct', async (req, res) => {
       if (data[0]) {
         res.send('El producto ya existe')
       } else {
-        await connection.execute('INSERT INTO list_products (id_model, id_color, id_provider, stock, price) VALUES (?, ?, ?, ?, ?)', [idModel, idColor, idProvider, stock, price])
+        await connection.execute(
+          'INSERT INTO list_products (id_model, id_color, id_provider, stock, price) VALUES (?, ?, ?, ?, ?)',
+          [idModel, idColor, idProvider, stock, price]
+        )
         res.send('Producto agregado correctamente')
       }
     } else {
-      res.status(400).send('Error en la peticion. La peticion debe tener la siguiente estructura: { "stock": "number", "idColor": "string", "idProvider": "string", "price": "number","idModel": "string"}')
-      throw new Error('Error en la peticion. La peticion debe tener la siguiente estructura: { "stock": "number", "idColor": "string", "idProvider": "string", "price": "number","idModel": "string"}')
+      res
+        .status(400)
+        .send(
+          'Error en la peticion. La peticion debe tener la siguiente estructura: { "stock": "number", "idColor": "string", "idProvider": "string", "price": "number","idModel": "string"}'
+        )
+      throw new Error(
+        'Error en la peticion. La peticion debe tener la siguiente estructura: { "stock": "number", "idColor": "string", "idProvider": "string", "price": "number","idModel": "string"}'
+      )
     }
   } catch (e) {
     console.error(e)
+  }
+})
+
+router.post('/isLogged', (req, res) => {
+  if (req.decoded) {
+    res.json('isLogged')
   }
 })
 

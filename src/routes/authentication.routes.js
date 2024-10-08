@@ -8,14 +8,17 @@ router.post('/login', async (req, res) => {
   if (isAuth) {
     const objToSign = { username: req.body.username }
     const token = auth.getToken(objToSign)
-    res.cookie('token', token, {
-      httpOnly: true,
-      sameSite: 'lax'
-    }).json({ message: 'Lo que sea' })
+    res
+      .cookie('token', token, {
+        httpOnly: true,
+        sameSite: 'lax'
+      })
+      .json('Te logeaste correctamente')
   } else {
-    res.status(401).json('Te logeaste correctamente')
+    res.status(401).json('Error al logearte')
   }
 })
+
 router.post('/signIn', (req, res) => {})
 
 export default router

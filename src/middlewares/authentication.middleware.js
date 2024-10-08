@@ -15,7 +15,7 @@ router.use((req, res, next) => {
       throw new Error('No tienes token de acceso')
     }
   } catch (e) {
-    res.status(401).send('No tienes acceso, debes iniciar sesion')
+    res.status(401).json('No tienes acceso, debes iniciar sesion')
     console.error(e)
   }
 })
