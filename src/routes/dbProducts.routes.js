@@ -37,5 +37,9 @@ router.get('/api/getSaleConditions', async (req, res) => {
   const [results] = await connection.execute('SELECT * FROM conditions;')
   res.json(results)
 })
+router.get('/api/getAllProducts', async (req, res) => {
+  const [results] = await connection.execute('SELECT providers.company_name, type_product.type_product_name, models.name_model, models.description, list_products.stock, list_products.price, colors.color_name, list_products.id_product FROM list_products JOIN models ON list_products.id_model=models.id_model JOIN type_product ON models.id_type_product=type_product.id_type_product JOIN colors ON colors.id_color=list_products.id_color JOIN providers ON providers.id_provider=list_products.id_provider;')
+  res.json(results)
+})
 
 export default router

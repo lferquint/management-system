@@ -1,12 +1,9 @@
 import express from 'express'
-import authenticationMiddleWare from '../middlewares/authentication.middleware.js'
 import DbService from '../services/DbService.js'
 import connection from '../libs/db.js'
 
 const dbManager = new DbService()
 const router = express.Router()
-
-router.use('/protected', authenticationMiddleWare)
 
 router.get('/protected', (req, res) => {
   res.send(
@@ -16,6 +13,7 @@ router.get('/protected', (req, res) => {
 
 router.post('/addTypeProduct', async (req, res) => {
   const { typeProduct } = req.body
+  console.log(typeProduct)
   try {
     if (typeProduct) {
       const data = await dbManager.findTypeProduct(typeProduct)
@@ -97,7 +95,35 @@ router.post('/addProduct', async (req, res) => {
 
 router.post('/isLogged', (req, res) => {
   if (req.decoded) {
-    res.json('isLogged')
+    res.json({ message: 'isLogged' })
+  } else {
+    res.json({ message: 'isNotLogged' })
+  }
+})
+
+// router.post('updateProduct', (req, res) => {
+//   const { price, stock } = req.body
+//   connection.execute('UPDATE list_products SET price=? WHERE id_product=?;', [])
+// })
+router.post('/deleteProduct/:idProduct', async (req, res) => {
+  const idProduct = req.params.idProduct
+  try {
+    if (typeof idProduct !== 'string') {
+      throw new Error('Error en la consulta')
+    } else {
+      const [data] = await connection.execute(
+        'DELETE FROM list_products WHERE id_product=?;',
+        [idProduct]
+      )
+      if (data.affectedRows === 0) {
+        res.send('El producto que intentas borrar no existe')
+      } else {
+        res.send('Todo correcto hermano')
+      }
+    }
+  } catch (e) {
+    console.log(e)
+    res.send('Error en la consulta')
   }
 })
 

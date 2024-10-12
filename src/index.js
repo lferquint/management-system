@@ -2,6 +2,7 @@ import express from 'express'
 import pdfRouter from './routes/pdf.routes.js'
 import prueba from './routes/dbProducts.routes.js'
 import modifyRegister from './routes/modifyRegisters.routes.js'
+import authenticationMiddleWare from './middlewares/authentication.middleware.js'
 import login from './routes/authentication.routes.js'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
@@ -20,6 +21,7 @@ app.use(
 
 app.use(express.json())
 app.use(pdfRouter, login, prueba)
+app.use('/protected', authenticationMiddleWare)
 app.use('/protected', modifyRegister)
 
 app.listen(PORT)
