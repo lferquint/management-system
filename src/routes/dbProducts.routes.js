@@ -18,7 +18,8 @@ router.get('/api/getModels/:idTypeProduct', async (req, res) => {
 })
 router.get('/api/getColorsProduct/:idProduct', async (req, res) => {
   const [results] = await connection.execute(
-    'SELECT colors.color_name, colors.id_color FROM list_products JOIN colors ON list_products.id_color=colors.id_color JOIN models ON list_products.id_model=models.id_model WHERE models.id_model=?;',
+    // 'SELECT colors.color_name, colors.id_color FROM list_products JOIN colors ON list_products.id_color=colors.id_color JOIN models ON list_products.id_model=models.id_model WHERE models.id_model=?;',
+    'SELECT colors.color_name, colors.id_color FROM colors JOIN list_products ON list_products.id_color=colors.id_color JOIN models ON list_products.id_model=models.id_model WHERE models.id_model=?',
     [req.params.idProduct]
   )
   // const dataConverted = results.map((element) => {
@@ -38,8 +39,15 @@ router.get('/api/getSaleConditions', async (req, res) => {
   res.json(results)
 })
 router.get('/api/getAllProducts', async (req, res) => {
-  const [results] = await connection.execute('SELECT providers.company_name, type_product.type_product_name, models.name_model, models.description, list_products.stock, list_products.price, colors.color_name, list_products.id_product FROM list_products JOIN models ON list_products.id_model=models.id_model JOIN type_product ON models.id_type_product=type_product.id_type_product JOIN colors ON colors.id_color=list_products.id_color JOIN providers ON providers.id_provider=list_products.id_provider;')
+  const [results] = await connection.execute(
+    'SELECT providers.company_name, type_product.type_product_name, models.name_model, models.description, list_products.stock, list_products.price, colors.color_name, list_products.id_product FROM list_products JOIN models ON list_products.id_model=models.id_model JOIN type_product ON models.id_type_product=type_product.id_type_product JOIN colors ON colors.id_color=list_products.id_color JOIN providers ON providers.id_provider=list_products.id_provider;'
+  )
   res.json(results)
+})
+router.get('/api/getColorsInStock/:idModel', async (req, res) => {
+  const idModel = req.params.idModel
+  const [results] = await connection.execute('SELECT colors.color_name FROM colors JOIN list_products ON list_products.id_color=colors.id_color JOIN models ON list_products.id_model=models.id_model WHERE list_products.is_stock="true" AND models.id_model=? ;', [idModel])
+  res.send(results)
 })
 
 export default router

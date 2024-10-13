@@ -62,7 +62,19 @@ router.post('/addModel', async (req, res) => {
   }
 })
 
-router.post('/addProvider', (req, res) => {})
+router.post('/addProvider', async (req, res) => {
+  const { website, tel, email, companyName } = req.body
+  try {
+    if (website && tel && email && companyName) {
+      await connection.execute('INSERT INTO providers (website, tel, email, company_name) VALUES (?, ?, ?, ?)', [website, tel, email, companyName])
+      console.log('Espero que esto esté funcionando')
+    } else {
+      throw new Error('Error en la consulta')
+    }
+  } catch (e) {
+    res.send('Error en la consulta')
+  }
+})
 
 router.post('/addProduct', async (req, res) => {
   const { stock, idColor, idProvider, price, idModel } = req.body
@@ -90,6 +102,19 @@ router.post('/addProduct', async (req, res) => {
     }
   } catch (e) {
     console.error(e)
+  }
+})
+
+router.post('/addColors', async (req, res) => {
+  const { colorName, idModel } = req.body
+  try {
+    if (colorName && idModel) {
+      console.log()
+    } else {
+      throw new Error('Error en la consulta')
+    }
+  } catch (e) {
+
   }
 })
 

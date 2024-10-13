@@ -7,7 +7,7 @@ const connection = await mysql.createConnection({
   host: 'localhost',
   port: PORT,
   user: 'root',
-  database: 'vrintex',
+  database: 'vrintex2',
   password: process.env.DB_PASSWORD
 })
 export default connection

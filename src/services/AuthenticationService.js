@@ -25,12 +25,6 @@ class AuthenticationService {
 
   processPassword(password) {
     try {
-      // bcrypt.hash(password, saltRounds, function(err, hash) {
-      //   if (err) {
-      //     throw err
-      //   }
-      //   securePassword = hash
-      // })
       const hash = bcrypt.hashSync(password, saltRounds)
       return hash
     } catch (e) {
