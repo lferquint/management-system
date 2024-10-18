@@ -77,16 +77,17 @@ router.post('/addProvider', async (req, res) => {
 })
 
 router.post('/addProduct', async (req, res) => {
-  const { stock, idColor, idProvider, price, idModel } = req.body
+  const { stock, idColor, idProvider, price, idModel, isStock } = req.body
   try {
-    if (stock && idColor && idProvider && price && idModel) {
+    if (stock && idColor && idProvider && price && idModel && isStock) {
       const data = await dbManager.findProduct(idModel, idColor, idProvider)
       if (data[0]) {
         res.send('El producto ya existe')
       } else {
+        console.log('Minimo estoy llegando aqui')
         await connection.execute(
-          'INSERT INTO list_products (id_model, id_color, id_provider, stock, price) VALUES (?, ?, ?, ?, ?)',
-          [idModel, idColor, idProvider, stock, price]
+          'INSERT INTO list_products (id_model, id_color, id_provider, stock, price, is_stock) VALUES (?, ?, ?, ?, ?, ?)',
+          [idModel, idColor, idProvider, stock, price, isStock]
         )
         res.send('Producto agregado correctamente')
       }
@@ -105,16 +106,17 @@ router.post('/addProduct', async (req, res) => {
   }
 })
 
-router.post('/addColors', async (req, res) => {
-  const { colorName, idModel } = req.body
+router.post('/addColor', async (req, res) => {
+  const { colorName } = req.body
   try {
-    if (colorName && idModel) {
-      console.log()
+    if (colorName) {
+      connection.execute('INSERT INTO colors (color_name) VALUES (?)', [colorName])
+      res.send('Color agregado correctamente')
     } else {
       throw new Error('Error en la consulta')
     }
   } catch (e) {
-
+    res.send('Error en la consulta')
   }
 })
 

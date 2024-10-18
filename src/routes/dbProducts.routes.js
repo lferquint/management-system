@@ -46,8 +46,25 @@ router.get('/api/getAllProducts', async (req, res) => {
 })
 router.get('/api/getColorsInStock/:idModel', async (req, res) => {
   const idModel = req.params.idModel
-  const [results] = await connection.execute('SELECT colors.color_name FROM colors JOIN list_products ON list_products.id_color=colors.id_color JOIN models ON list_products.id_model=models.id_model WHERE list_products.is_stock="true" AND models.id_model=? ;', [idModel])
+  const [results] = await connection.execute(
+    'SELECT colors.color_name FROM colors JOIN list_products ON list_products.id_color=colors.id_color JOIN models ON list_products.id_model=models.id_model WHERE list_products.is_stock="true" AND models.id_model=? ;',
+    [idModel]
+  )
   res.send(results)
+})
+
+// Temporal routes
+router.get('/api/getAllColors', async (req, res) => {
+  const [data] = await connection.execute('SELECT * FROM colors')
+  res.json(data)
+})
+router.get('/api/getAllModels', async (req, res) => {
+  const [data] = await connection.execute('SELECT * FROM models')
+  res.json(data)
+})
+router.get('/api/getAllProviders', async (req, res) => {
+  const [data] = await connection.execute('SELECT id_provider, company_name FROM providers')
+  res.json(data)
 })
 
 export default router
