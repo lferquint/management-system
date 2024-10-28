@@ -154,7 +154,8 @@ class Pdf {
       options: {
         prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
           pdfDocument.font('Helvetica').fontSize(9).text()
-        }
+        },
+        minRowHeight: 20
       }
     }
     await pdfDocument
