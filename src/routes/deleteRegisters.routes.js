@@ -39,11 +39,7 @@ router.post('/deleteColor/:idColor', async (req, res) => {
         [idColor]
       )
       if (data.affectedRows === 0 && data2.affectedRows === 0) {
-        res.status(400).json({ content: 'Error en la consulta' })
         throw new Error('Error en la consulta')
-      } else if (data.affectedRows === 0 || data.affectedRows === 0) {
-        res.status(500).json({ content: 'Error, los registros no se eliminaron correctamente' })
-        throw new Error('Error interno')
       } else {
         res.status(200).json({ content: 'Success' })
       }
@@ -51,6 +47,45 @@ router.post('/deleteColor/:idColor', async (req, res) => {
   } catch (e) {
     console.log(e)
     res.send('Algo salió mal, intentalo de nuevo')
+  }
+})
+router.post('/deleteTypeProduct/:idTypeProduct', async (req, res) => {
+  const idTypeProduct = req.params.idTypeProduct
+  try {
+    if (!idTypeProduct) {
+      throw new Error('Error en la consulta, el parametro es incorrecto')
+    } else {
+      const [data] = await connection.execute(
+        'SELECT * FROM models WHERE id_type_product=?',
+        [idTypeProduct]
+      )
+      const idsModel = data.map((register) => {
+        return register.id_model
+      })
+
+      for (const id of idsModel) {
+        await connection.execute('DELETE FROM list_products WHERE id_model=?', [id])
+      }
+      await connection.execute('DELETE FROM models WHERE id_type_product=?', [idTypeProduct])
+      await connection.execute('DELETE FROM type_product WHERE id_type_product=?', [idTypeProduct])
+      res.send('Lo que sea hermano')
+    }
+  } catch (e) {
+    console.log(e)
+  }
+})
+router.post('/deleteModel/:idModel', async (req, res) => {
+  const idModel = req.params.idModel
+  try {
+    if (!idModel) {
+      throw new Error('Error en la consulta, el parametro es incorrecto')
+    } else {
+      await connection.execute('DELETE FROM list_products WHERE id_model=?', [idModel])
+      await connection.execute('DELETE FROM models WHERE id_model=?', [idModel])
+      res.send('Lo que sea hermano')
+    }
+  } catch (e) {
+    console.log(e)
   }
 })
 export default router
