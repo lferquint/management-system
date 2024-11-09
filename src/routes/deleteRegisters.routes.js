@@ -88,4 +88,18 @@ router.post('/deleteModel/:idModel', async (req, res) => {
     console.log(e)
   }
 })
+router.post('/deleteProvider/:idProvider', async (req, res) => {
+  const idProvider = req.params.idProvider
+  try {
+    if (!idProvider) {
+      throw new Error('Error en la consulta, el parametro es incorrecto')
+    } else {
+      await connection.execute('DELETE FROM list_products WHERE id_provider=?', [idProvider])
+      await connection.execute('DELETE FROM providers WHERE id_provider=?', [idProvider])
+      res.send('Success')
+    }
+  } catch (e) {
+    console.log(e)
+  }
+})
 export default router
