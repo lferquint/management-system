@@ -1,6 +1,6 @@
 import PDFDocument from 'pdfkit-table'
 import PdfService from '../services/PdfService.js'
-import fs from 'fs'
+// import fs from 'fs'
 
 async function createPdf(req, res) {
   // class Data {
@@ -93,12 +93,15 @@ async function createPdf(req, res) {
   pdfManager.addSignature(doc, data.signature)
 
   // Output
-  doc.pipe(fs.createWriteStream('./hola.pdf'))
 
+  await doc.pipe(res)
+  res.writeHead(200, {
+    'Content-Type': 'application/pdf',
+    'Content-Disposition': 'attachment'
+  })
   // Finish document
   doc.end()
 
   // Send response
-  res.send('Hello')
 }
 export default createPdf
