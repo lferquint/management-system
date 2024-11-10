@@ -60,7 +60,10 @@ router.post('/addProvider', async (req, res) => {
   const { website, tel, email, companyName } = req.body
   try {
     if (website && tel && email && companyName) {
-      await connection.execute('INSERT INTO providers (website, tel, email, company_name) VALUES (?, ?, ?, ?)', [website, tel, email, companyName])
+      await connection.execute(
+        'INSERT INTO providers (website, tel, email, company_name) VALUES (?, ?, ?, ?)',
+        [website, tel, email, companyName]
+      )
       res.send('Operacion realizada exitosamente')
     } else {
       throw new Error('Error en la consulta')
@@ -104,7 +107,9 @@ router.post('/addColor', async (req, res) => {
   const { colorName } = req.body
   try {
     if (colorName) {
-      connection.execute('INSERT INTO colors (color_name) VALUES (?)', [colorName])
+      connection.execute('INSERT INTO colors (color_name) VALUES (?)', [
+        colorName
+      ])
       res.send('Color agregado correctamente')
     } else {
       throw new Error('Error en la consulta')
@@ -119,6 +124,23 @@ router.post('/isLogged', (req, res) => {
     res.json({ message: 'isLogged' })
   } else {
     res.json({ message: 'isNotLogged' })
+  }
+})
+
+router.post('/addCondition', async (req, res) => {
+  const { condition } = req.body
+  try {
+    if (condition) {
+      connection.execute(
+        'INSERT INTO conditions (`condition`) VALUES (?)',
+        [condition]
+      )
+      res.send('Condicion agregado correctamente')
+    } else {
+      throw new Error('Error en la consulta')
+    }
+  } catch (e) {
+    res.send('Error en la consulta')
   }
 })
 
