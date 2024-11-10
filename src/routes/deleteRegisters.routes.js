@@ -102,4 +102,17 @@ router.post('/deleteProvider/:idProvider', async (req, res) => {
     console.log(e)
   }
 })
+router.post('/deleteCondition/:idCondition', async (req, res) => {
+  const idCondition = req.params.idCondition
+  try {
+    if (!idCondition) {
+      throw new Error('Error en la consulta, el parametro es incorrecto')
+    } else {
+      await connection.execute('DELETE FROM conditions WHERE id_conditions=?', [idCondition])
+      res.send('Success')
+    }
+  } catch (e) {
+    console.log(e)
+  }
+})
 export default router
