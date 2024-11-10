@@ -206,6 +206,7 @@ class Pdf {
    * @param {Array} conditions
    */
   addConditions(pdfDocument, conditions) {
+    this.addNote(pdfDocument, 'CONDICIONES DE VENTA:')
     for (let i = 0; i < conditions.length; i++) {
       this.addNote(pdfDocument, conditions[i])
     }

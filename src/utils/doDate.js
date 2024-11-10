@@ -8,7 +8,6 @@ function doDate(date) {
   if (day.length < 2) {
     day = `0${date.getDate()}`
   }
-  console.log(date.getMonth())
   return `${day}/${month}/${date.getFullYear()}`
 }
 export default doDate

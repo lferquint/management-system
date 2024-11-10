@@ -96,8 +96,7 @@ async function createPdf(req, res) {
 
   await doc.pipe(res)
   res.writeHead(200, {
-    'Content-Type': 'application/pdf',
-    'Content-Disposition': 'attachment'
+    'Content-Type': 'application/pdf'
   })
   // Finish document
   doc.end()
