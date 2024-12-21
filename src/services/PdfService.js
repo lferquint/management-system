@@ -44,9 +44,9 @@ class PdfService {
    */
 
   addText(text, config) {
-    // if (typeof text !== 'string') {
-    //   throw new ValidationError('"text" param must be a string ' + text)
-    // }
+    if (typeof text !== 'string') {
+      throw new ValidationError('text param must be a string')
+    }
     this.pdfDocument
       .fillColor('black')
       .font(this.font)
@@ -63,7 +63,7 @@ class PdfService {
 
   addTextBold(text, config) {
     if (typeof text !== 'string') {
-      throw new ValidationError('"text" param must be a string')
+      throw new ValidationError('text param must be a string')
     }
     this.pdfDocument
       .fillColor('black')
@@ -281,7 +281,7 @@ class PdfService {
    * @param {String} deliveryTime
    */
   addDeliveryTime(deliveryTime) {
-    this.addText(this.pdfDocument, `Tiempo de entrega: ${deliveryTime}`)
+    this.addText(`Tiempo de entrega: ${deliveryTime}`)
     this.pdfDocument.moveDown()
   }
 
@@ -294,9 +294,9 @@ class PdfService {
    * @param {Array} conditions
    */
   addConditions(conditions) {
-    this.addNote(this.pdfDocument, 'CONDICIONES DE VENTA:')
+    this.addNote('CONDICIONES DE VENTA:')
     for (let i = 0; i < conditions.length; i++) {
-      this.addNote(this.pdfDocument, conditions[i])
+      this.addNote(conditions[i])
     }
   }
 
