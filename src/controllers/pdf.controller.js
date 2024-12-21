@@ -1,6 +1,5 @@
 import PDFDocument from 'pdfkit-table'
 import PdfService from '../services/PdfService.js'
-// import fs from 'fs'
 
 async function createPdf(req, res) {
   // class Data {
@@ -72,35 +71,33 @@ async function createPdf(req, res) {
   const doc = new PDFDocument()
 
   // Create pdfManager
-  const pdfManager = new PdfService()
+  const pdfManager = new PdfService(doc)
 
   // Header on the document
-  pdfManager.addHeader(doc)
+  pdfManager.addHeader({ address: 'a', email: 'b', tel: '1' })
 
   // Introduction on the document
-  pdfManager.addIntroduction(doc, data.header)
+  pdfManager.addIntroduction(data.header)
 
   // Add and calculate product quantities
-  await pdfManager.addAmounts(doc, data.products)
+  await pdfManager.addAmounts(data.products)
 
   // Delivery time
-  pdfManager.addDeliveryTime(doc, data.deliveryTime)
+  pdfManager.addDeliveryTime(data.deliveryTime)
 
   // Conditions to sale
-  pdfManager.addConditions(doc, data.conditions)
+  pdfManager.addConditions(data.conditions)
 
   // Signature
-  pdfManager.addSignature(doc, data.signature)
+  pdfManager.addSignature(data.signature)
 
   // Output
-
   await doc.pipe(res)
   res.writeHead(200, {
     'Content-Type': 'application/pdf'
   })
+
   // Finish document
   doc.end()
-
-  // Send response
 }
 export default createPdf

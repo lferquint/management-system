@@ -1,79 +1,141 @@
 import doDate from '../utils/doDate.js'
 import formateadorMXN from '../utils/formaterMXN.js'
+import ValidationError from '../errors/errors.js'
 import {
   calculateIVA,
   calculateSubTotal,
   calculateTotal
 } from '../utils/calcuateAmounts.js'
 
-class Pdf {
+class PdfService {
+  constructor(pdfDocument) {
+    this.font = 'Helvetica'
+    this.pdfDocument = pdfDocument
+    this.pendingMessage = 'Pendiente'
+  }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  setFont(newFont) {
+    this.font = newFont
+  }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  setDocument(newDocument) {
+    this.pdfDocument = newDocument
+  }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  setPendingMessage(text) {
+    this.pendingMessage = text
+  }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+
   /**
    * addText
-   * @param {Object} pdfDocument
    * @param {String} text
    */
-  addText(pdfDocument, text) {
-    pdfDocument
+
+  addText(text, config) {
+    // if (typeof text !== 'string') {
+    //   throw new ValidationError('"text" param must be a string ' + text)
+    // }
+    this.pdfDocument
       .fillColor('black')
-      .font('Helvetica')
+      .font(this.font)
       .fontSize(10)
-      .text(`${text}`)
+      .text(text, config)
   }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @param {String} text
+   */
+
+  addTextBold(text, config) {
+    if (typeof text !== 'string') {
+      throw new ValidationError('"text" param must be a string')
+    }
+    this.pdfDocument
+      .fillColor('black')
+      .fontSize(10)
+      .font(`${this.font}-Bold`)
+      .text(text, config)
+  }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
    * addNote
-   * @param {Object} pdfDocument
    * @param {String} text
    */
-  addNote(pdfDocument, text) {
-    pdfDocument
+
+  addNote(text) {
+    if (typeof text !== 'string') {
+      throw new ValidationError('text param must be a string')
+    }
+    this.pdfDocument
       .fillColor('black')
       .fontSize(10)
-      .font('Helvetica-Bold')
-      .text(`${text}`, {
-        width: '300'
-      })
+      .font(`${this.font}-Bold`)
+      .text(text, { width: '300' /* Config */ })
   }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
    * Obj type header for PDF document.
-   * @typedef {Object} Header
+   * @typedef {Object} objIntroduction
    * @property {string} nameClient
    * @property {string} tel
    * @property {string} company
    * @property {string} place
+   * @property {string} introductionMessage
    * addIntroduction
-   * @param {Object} pdfDocument
-   * @param {Header} objHeaders
+   * @param {objIntroduction} objIntroduction
    */
-  addIntroduction(pdfDocument, objHeaders) {
-    pdfDocument
-      .fillColor('black')
-      .font('Helvetica-Bold')
-      .fontSize(10)
-      .text(objHeaders.company)
-    pdfDocument.text(`ATN. ${objHeaders.nameClient}`)
-    pdfDocument.text(`TEL. ${objHeaders.tel}`)
-    pdfDocument.font('Helvetica').text(doDate(new Date()), {
-      align: 'right'
-    })
-    pdfDocument
-      .moveDown()
-      .moveDown()
-      .moveDown()
-      .text(
-        'Por medio de la presente ponemos a su atenta consideracion la cotizacion solicitada.'
-      )
-    pdfDocument.moveDown().text(`Obra: ${objHeaders.place}`)
+
+  addIntroduction(objIntroduction) {
+    if (!objIntroduction) objIntroduction = {}
+    this.addTextBold(objIntroduction.company || this.pendingMessage) // Company name
+    this.addText(`ATN. ${objIntroduction.nameClient || this.pendingMessage}`) // Name client
+    this.addText(`TEL. ${objIntroduction.tel || this.pendingMessage}`) // Tel client
+    this.addText(doDate(new Date()), { align: 'right' }) // Date
+    this.pdfDocument.moveDown().moveDown().moveDown()
+    this.addText(objIntroduction.introductionMessage || 'Default message introduction') // Introducion message
+    this.pdfDocument.moveDown()
+    this.addText(`Obra: ${objIntroduction.place || this.pendingMessage}`) // Project address
   }
 
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+
   /**
+   * Obj type header for PDF document.
+   * @typedef {Object} headerConfig
+   * @property {string} image
+   * @property {string} address
+   * @property {string} tel
+   * @property {string} email
    * addHeader
-   * @param {Object} pdfDocument
+   * @param {headerConfig} headerConfig
    */
-  addHeader(pdfDocument) {
+
+  addHeader(headerConfig) {
+    if (!headerConfig) headerConfig = {}
     const topPosition = 45
-    pdfDocument
+    /* this.pdfDocument
       .fontSize(13)
       .font('Courier-Bold')
       .fillColor('gray')
@@ -82,54 +144,65 @@ class Pdf {
         width: 110,
         align: 'right'
       })
-    pdfDocument.text('Hospitalaria', {
+    this.pdfDocument.text('Hospitalaria', {
       paragraphGap: 5,
       width: 110,
       align: 'right'
-    })
-    pdfDocument.rect(380, topPosition, 0.5, 80).strokeColor('gray').stroke()
+    }) */
 
-    pdfDocument
-      .rect(70, topPosition + 90, 470, 0.5)
+    this.pdfDocument
+      .rect(380, topPosition, 0.5, 80) // Line
       .strokeColor('gray')
       .stroke()
 
-    pdfDocument.image('./src/assets/logo.jpg', 390, topPosition + 25, {
-      // fit: [100, 100],
-      width: 150
-    })
-    pdfDocument
+    this.pdfDocument
+      .rect(70, topPosition + 90, 470, 0.5) // Line
+      .strokeColor('gray')
+      .stroke()
+
+    this.pdfDocument.image(
+      headerConfig.image || './src/assets/logo.jpg', // Location image
+      390, // X position
+      topPosition + 25,
+      { width: 150 }
+    )
+
+    this.pdfDocument
       .fontSize(6)
       .fillColor('black')
       .text(
-        'San Francisco No. 9, Col. San Jerónimo Aculco, D.F.',
-        70,
+        headerConfig.address || 'San Francisco No. 9, example address', // Address
+        70, // X position
         topPosition + 60,
-        {
-          paragraphGap: 10
-        }
+        { paragraphGap: 10 }
       )
-    pdfDocument
+
+    this.pdfDocument
       .fontSize(6)
       .text(
-        'Tels. (55) 5631-2039 / Email: vrintecsistemasdesalud@yahoo.com.mx',
-        70,
+        `Tel: ${headerConfig.tel || '55 5555 5555'} / Email: ${// Tel and email
+          headerConfig.email || 'user@example.com.mx'
+        }`,
+        70, // X position
         topPosition + 70,
-        {
-          paragraphGap: 10
-        }
+        { paragraphGap: 10 }
       )
-    pdfDocument.moveDown()
-    pdfDocument.moveDown()
-    pdfDocument.moveDown()
+
+    this.pdfDocument.moveDown()
+    this.pdfDocument.moveDown()
+    this.pdfDocument.moveDown()
   }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
    * addAmounts
    * @param {Object} pdfDocument
    * @param {Array.<{nameProduct: string, model: string, amount: number, price: number, description: string, units: string}>} products
    */
-  async addAmounts(pdfDocument, products) {
+
+  async addAmounts(products) {
     const granArray = []
     for (let i = 0; i < products.length; i++) {
       const array = []
@@ -138,7 +211,9 @@ class Pdf {
         products[i].amount,
         products[i].units,
         `${formateadorMXN.format(products[i].price).replace('$', '$ ')}`,
-        `${formateadorMXN.format(products[i].amount * products[i].price).replace('$', '$ ')}`
+        `${formateadorMXN
+          .format(products[i].amount * products[i].price)
+          .replace('$', '$ ')}`
       )
       granArray.push(array)
     }
@@ -153,12 +228,12 @@ class Pdf {
       rows: granArray,
       options: {
         prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
-          pdfDocument.font('Helvetica').fontSize(9).text()
+          this.pdfDocument.font('Helvetica').fontSize(9).text()
         },
         minRowHeight: 20
       }
     }
-    await pdfDocument
+    await this.pdfDocument
       .moveDown()
       .moveDown()
       .moveDown()
@@ -166,60 +241,80 @@ class Pdf {
         width: 475,
         columnsSize: [185, 70, 70, 70, 75]
       })
-    pdfDocument
+    this.pdfDocument
       .font('Helvetica-Bold')
-      .text(`Subtotal ${formateadorMXN.format(calculateSubTotal(products)).replace('$', '$ ')}`, {
-        align: 'right',
-        lineGap: 5
-      })
-    pdfDocument.text(
-      `IVA ${formateadorMXN.format(calculateIVA(calculateSubTotal(products))).replace('$', '$ ')}`,
+      .text(
+        `Subtotal ${formateadorMXN
+          .format(calculateSubTotal(products))
+          .replace('$', '$ ')}`,
+        {
+          align: 'right',
+          lineGap: 5
+        }
+      )
+    this.pdfDocument.text(
+      `IVA ${formateadorMXN
+        .format(calculateIVA(calculateSubTotal(products)))
+        .replace('$', '$ ')}`,
       {
         align: 'right',
         lineGap: 5
       }
     )
-    pdfDocument.text(
-      `TOTAL ${formateadorMXN.format(
-        calculateTotal(calculateSubTotal(products))
-      ).replace('$', '$ ')}`,
+    this.pdfDocument.text(
+      `TOTAL ${formateadorMXN
+        .format(calculateTotal(calculateSubTotal(products)))
+        .replace('$', '$ ')}`,
       {
         align: 'right'
       }
     )
-    pdfDocument.moveDown().moveDown()
+    this.pdfDocument.moveDown().moveDown()
   }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
    * addDelyveryTime
    * @param {Object} pdfDocument
    * @param {String} deliveryTime
    */
-  addDeliveryTime(pdfDocument, deliveryTime) {
-    this.addText(pdfDocument, `Tiempo de entrega: ${deliveryTime}`)
-    pdfDocument.moveDown()
+  addDeliveryTime(deliveryTime) {
+    this.addText(this.pdfDocument, `Tiempo de entrega: ${deliveryTime}`)
+    this.pdfDocument.moveDown()
   }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
    * addConditions
    * @param {Object} pdfDocument
    * @param {Array} conditions
    */
-  addConditions(pdfDocument, conditions) {
-    this.addNote(pdfDocument, 'CONDICIONES DE VENTA:')
+  addConditions(conditions) {
+    this.addNote(this.pdfDocument, 'CONDICIONES DE VENTA:')
     for (let i = 0; i < conditions.length; i++) {
-      this.addNote(pdfDocument, conditions[i])
+      this.addNote(this.pdfDocument, conditions[i])
     }
   }
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
    * addSignature
    * @param {Object} pdfDocument
    * @param {String} name
    */
-  addSignature(pdfDocument, name) {
-    pdfDocument.moveDown().moveDown().moveDown().text('ATTE.', { align: 'center' })
-    pdfDocument.moveDown().text(name, { align: 'center' })
+  addSignature(name) {
+    this.pdfDocument
+      .moveDown()
+      .moveDown()
+      .moveDown()
+      .text('ATTE.', { align: 'center' })
+    this.pdfDocument.moveDown().text(name, { align: 'center' })
   }
 }
-export default Pdf
+export default PdfService
