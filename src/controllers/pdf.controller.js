@@ -74,7 +74,7 @@ async function createPdf(req, res) {
   const pdfManager = new PdfService(doc)
 
   // Header on the document
-  pdfManager.addHeader({ address: 'a', email: 'b', tel: '1' })
+  pdfManager.addHeader()
 
   // Introduction on the document
   pdfManager.addIntroduction(data.header)

@@ -52,8 +52,6 @@ router.get('/api/getColorsInStock/:idModel', async (req, res) => {
   )
   res.send(results)
 })
-
-// Temporal routes
 router.get('/api/getAllColors', async (req, res) => {
   const [data] = await connection.execute('SELECT * FROM colors')
   res.json(data)

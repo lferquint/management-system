@@ -1,5 +1,5 @@
 import doDate from '../utils/doDate.js'
-import formateadorMXN from '../utils/formaterMXN.js'
+import formatNumber from '../utils/formatNumber.js'
 import ValidationError from '../errors/errors.js'
 import {
   calculateIVA,
@@ -109,11 +109,13 @@ class PdfService {
   addIntroduction(objIntroduction) {
     if (!objIntroduction) objIntroduction = {}
     this.addTextBold(objIntroduction.company || this.pendingMessage) // Company name
-    this.addText(`ATN. ${objIntroduction.nameClient || this.pendingMessage}`) // Name client
-    this.addText(`TEL. ${objIntroduction.tel || this.pendingMessage}`) // Tel client
+    this.addTextBold(`ATN. ${objIntroduction.nameClient || this.pendingMessage}`) // Name client
+    this.addTextBold(`TEL. ${objIntroduction.tel || this.pendingMessage}`) // Tel client
     this.addText(doDate(new Date()), { align: 'right' }) // Date
     this.pdfDocument.moveDown().moveDown().moveDown()
-    this.addText(objIntroduction.introductionMessage || 'Default message introduction') // Introducion message
+    this.addText(
+      objIntroduction.introductionMessage || 'Default message introduction'
+    ) // Introducion message
     this.pdfDocument.moveDown()
     this.addText(`Obra: ${objIntroduction.place || this.pendingMessage}`) // Project address
   }
@@ -135,20 +137,6 @@ class PdfService {
   addHeader(headerConfig) {
     if (!headerConfig) headerConfig = {}
     const topPosition = 45
-    /* this.pdfDocument
-      .fontSize(13)
-      .font('Courier-Bold')
-      .fillColor('gray')
-      .text('Division', 260, 45, {
-        paragraphGap: 5,
-        width: 110,
-        align: 'right'
-      })
-    this.pdfDocument.text('Hospitalaria', {
-      paragraphGap: 5,
-      width: 110,
-      align: 'right'
-    }) */
 
     this.pdfDocument
       .rect(380, topPosition, 0.5, 80) // Line
@@ -177,16 +165,15 @@ class PdfService {
         { paragraphGap: 10 }
       )
 
-    this.pdfDocument
-      .fontSize(6)
-      .text(
-        `Tel: ${headerConfig.tel || '55 5555 5555'} / Email: ${// Tel and email
-          headerConfig.email || 'user@example.com.mx'
-        }`,
-        70, // X position
-        topPosition + 70,
-        { paragraphGap: 10 }
-      )
+    this.pdfDocument.fontSize(6).text(
+      `Tel: ${headerConfig.tel || '55 5555 5555'} / Email: ${
+        // Tel and email
+        headerConfig.email || 'user@example.com.mx'
+      }`,
+      70, // X position
+      topPosition + 70,
+      { paragraphGap: 10 }
+    )
 
     this.pdfDocument.moveDown()
     this.pdfDocument.moveDown()
@@ -198,34 +185,36 @@ class PdfService {
 
   /**
    * addAmounts
-   * @param {Object} pdfDocument
    * @param {Array.<{nameProduct: string, model: string, amount: number, price: number, description: string, units: string}>} products
    */
 
-  async addAmounts(products) {
-    const granArray = []
+  async addAmounts(products, headers) {
+    if (!headers) headers = []
+    const rowsArray = [] // Table data
+
+    // data products adapter
     for (let i = 0; i < products.length; i++) {
-      const array = []
-      array.push(
+      const row = []
+      row.push(
         products[i].description,
         products[i].amount,
         products[i].units,
-        `${formateadorMXN.format(products[i].price).replace('$', '$ ')}`,
-        `${formateadorMXN
-          .format(products[i].amount * products[i].price)
-          .replace('$', '$ ')}`
+        formatNumber(products[i].price),
+        formatNumber(products[i].amount * products[i].price)
       )
-      granArray.push(array)
+      rowsArray.push(row)
     }
+
+    // table config
     const table = {
       headers: [
-        'Descripcion',
-        'Cantidad',
-        'Unidad',
-        'Precio unitario',
-        'Importe'
+        headers[0] || 'Descripcion',
+        headers[1] || 'Cantidad',
+        headers[2] || 'Unidad',
+        headers[3] || 'Precio unitario',
+        headers[4] || 'Importe'
       ],
-      rows: granArray,
+      rows: rowsArray,
       options: {
         prepareRow: (row, indexColumn, indexRow, rectRow, rectCell) => {
           this.pdfDocument.font('Helvetica').fontSize(9).text()
@@ -233,42 +222,34 @@ class PdfService {
         minRowHeight: 20
       }
     }
-    await this.pdfDocument
-      .moveDown()
-      .moveDown()
-      .moveDown()
-      .table(table, {
-        width: 475,
-        columnsSize: [185, 70, 70, 70, 75]
-      })
-    this.pdfDocument
-      .font('Helvetica-Bold')
-      .text(
-        `Subtotal ${formateadorMXN
-          .format(calculateSubTotal(products))
-          .replace('$', '$ ')}`,
-        {
-          align: 'right',
-          lineGap: 5
-        }
-      )
-    this.pdfDocument.text(
-      `IVA ${formateadorMXN
-        .format(calculateIVA(calculateSubTotal(products)))
-        .replace('$', '$ ')}`,
+
+    this.pdfDocument.moveDown().moveDown().moveDown()
+
+    // reder table
+    await this.pdfDocument.table(table, {
+      width: 475,
+      columnsSize: [185, 70, 70, 70, 75]
+    })
+
+    // costs
+    this.addTextBold(`Subtotal ${formatNumber(calculateSubTotal(products))}`, {
+      align: 'right',
+      lineGap: 5
+    })
+    this.addTextBold(
+      `IVA ${formatNumber(calculateIVA(calculateSubTotal(products)))}`,
       {
         align: 'right',
         lineGap: 5
       }
     )
-    this.pdfDocument.text(
-      `TOTAL ${formateadorMXN
-        .format(calculateTotal(calculateSubTotal(products)))
-        .replace('$', '$ ')}`,
+    this.addTextBold(
+      `TOTAL ${formatNumber(calculateTotal(calculateSubTotal(products)))}`,
       {
         align: 'right'
       }
     )
+
     this.pdfDocument.moveDown().moveDown()
   }
 
@@ -277,10 +258,13 @@ class PdfService {
 
   /**
    * addDelyveryTime
-   * @param {Object} pdfDocument
    * @param {String} deliveryTime
    */
   addDeliveryTime(deliveryTime) {
+    // Handle errors
+    if (typeof deliveryTime !== 'string') {
+      throw new ValidationError('deliveryTime param must be a string')
+    }
     this.addText(`Tiempo de entrega: ${deliveryTime}`)
     this.pdfDocument.moveDown()
   }
@@ -290,11 +274,20 @@ class PdfService {
 
   /**
    * addConditions
-   * @param {Object} pdfDocument
-   * @param {Array} conditions
+   * @param {Object} conditions
+   * @param {Array} titleConditions
    */
-  addConditions(conditions) {
-    this.addNote('CONDICIONES DE VENTA:')
+  addConditions(conditions, titleConditions) {
+    // Handle errors
+    if (typeof conditions !== 'object') {
+      throw new ValidationError('conditions must be an Array')
+    }
+    if (titleConditions && typeof titleConditions !== 'string') {
+      throw new ValidationError('titleConditions param must be a string')
+    }
+
+    // Render conditions
+    this.addNote(titleConditions || 'CONDICIONES DE VENTA:')
     for (let i = 0; i < conditions.length; i++) {
       this.addNote(conditions[i])
     }
