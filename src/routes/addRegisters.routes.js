@@ -1,123 +1,148 @@
 import express from 'express'
 import DbService from '../services/DbService.js'
 import connection from '../libs/db.js'
+import { validateStrings, validateParams, validateNumbers } from '../utils/validations.js'
 
 const dbManager = new DbService()
 const router = express.Router()
 
+/* -------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------------------------------- */
+
 router.post('/addTypeProduct', async (req, res) => {
   const { typeProduct } = req.body
-  console.log(typeProduct)
+
   try {
-    if (typeProduct) {
-      const data = await dbManager.findTypeProduct(typeProduct)
-      if (data[0]) {
-        res.send('El type product ya existe')
-      } else {
-        connection.execute(
-          'INSERT INTO type_product (type_product_name) VALUES (?)',
-          [typeProduct]
-        )
-        res.send('type_product agregado correctamente')
-      }
+    // validate req.body
+    validateParams([typeProduct])
+
+    // validate types
+    validateStrings([typeProduct])
+
+    // insert in db or return existing data
+    const data = dbManager.findTypeProduct(typeProduct)
+    if (data[0]) {
+      res.send(`El type product ${data[0]} ya existe`)
     } else {
-      res.status(400).send('Error en la peticion')
-      throw new Error('Error en la peticion')
+      connection.execute(
+        'INSERT INTO type_product (type_product_name) VALUES (?)',
+        [typeProduct]
+      )
+      res.send('Success')
     }
   } catch (e) {
     console.error(e)
+    res.status(400).send('Error en la peticion')
   }
 })
+
+/* -------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------------------------------- */
 
 router.post('/addModel', async (req, res) => {
   const { model, description, idTypeProduct, units } = req.body
   try {
-    if (model && description && idTypeProduct && units) {
-      const data = await dbManager.findModel(model)
-      if (data[0]) {
-        res.send('El model ya existe')
-      } else {
-        connection.execute(
-          'INSERT INTO models (name_model, description, id_type_product, units) VALUES (?, ?, ?, ?)',
-          [model, description, idTypeProduct, units]
-        )
-        res.send('model agregado correctamente')
-      }
+    // validate req.body
+    validateParams([model, description, idTypeProduct, units])
+
+    // validate types
+    validateStrings([model, description, idTypeProduct, units])
+
+    // Insert in db or return the existing data
+    const data = await dbManager.findModel(model)
+    if (data[0]) {
+      res.send('El model ya existe')
     } else {
-      res
-        .status(400)
-        .send(
-          'Error en la peticion, modifique la peticion y vuelva a intentarlo'
-        )
-      throw new Error('Error en la peticion')
+      connection.execute(
+        'INSERT INTO models (name_model, description, id_type_product, units) VALUES (?, ?, ?, ?)',
+        [model, description, idTypeProduct, units]
+      )
+      res.send('model agregado correctamente')
     }
   } catch (e) {
     console.error(e)
+    res.status(400).send('Error en la peticion')
   }
 })
+
+/* -------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------------------------------- */
 
 router.post('/addProvider', async (req, res) => {
   const { website, tel, email, companyName } = req.body
   try {
-    if (website && tel && email && companyName) {
-      await connection.execute(
-        'INSERT INTO providers (website, tel, email, company_name) VALUES (?, ?, ?, ?)',
-        [website, tel, email, companyName]
-      )
-      res.send('Operacion realizada exitosamente')
-    } else {
-      throw new Error('Error en la consulta')
-    }
+    // validate req.body
+    validateParams([website, tel, email, companyName])
+
+    // validate types
+    validateStrings([website, tel, email, companyName])
+
+    await connection.execute(
+      'INSERT INTO providers (website, tel, email, company_name) VALUES (?, ?, ?, ?)',
+      [website, tel, email, companyName]
+    )
+    res.send('Operacion realizada exitosamente')
   } catch (e) {
-    res.send('Error en la consulta')
+    console.error(e)
+    res.send(400).send('Error en la peticion')
   }
 })
+
+/* -------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------------------------------- */
 
 router.post('/addProduct', async (req, res) => {
   const { stock, idColor, idProvider, price, idModel, isStock } = req.body
+
   try {
-    if (stock && idColor && idProvider && price && idModel && isStock) {
-      const data = await dbManager.findProduct(idModel, idColor, idProvider)
-      if (data[0]) {
-        res.send('El producto ya existe')
-      } else {
-        console.log('Minimo estoy llegando aqui')
-        await connection.execute(
-          'INSERT INTO list_products (id_model, id_color, id_provider, stock, price, is_stock) VALUES (?, ?, ?, ?, ?, ?)',
-          [idModel, idColor, idProvider, stock, price, isStock]
-        )
-        res.send('Producto agregado correctamente')
-      }
+    // Validate req.body
+    validateParams([stock, idColor, idProvider, price, idModel, isStock])
+
+    // Validate types
+    validateStrings([idColor, idProvider, idModel, isStock])
+    validateNumbers([stock, price])
+
+    // Search register in db
+    const data = await dbManager.findProduct(idModel, idColor, idProvider)
+
+    // Insert in db or return the existing data
+    if (data[0]) {
+      res.send(`El producto ${data[0]} ya existe`)
     } else {
-      res
-        .status(400)
-        .send(
-          'Error en la peticion. La peticion debe tener la siguiente estructura: { "stock": "number", "idColor": "string", "idProvider": "string", "price": "number","idModel": "string"}'
-        )
-      throw new Error(
-        'Error en la peticion. La peticion debe tener la siguiente estructura: { "stock": "number", "idColor": "string", "idProvider": "string", "price": "number","idModel": "string"}'
+      await connection.execute(
+        'INSERT INTO list_products (id_model, id_color, id_provider, stock, price, is_stock) VALUES (?, ?, ?, ?, ?, ?)',
+        [idModel, idColor, idProvider, stock, price, isStock]
       )
+      res.send('Producto agregado correctamente')
     }
   } catch (e) {
     console.error(e)
+    res.status(400).send('Error en la peticion')
   }
 })
 
+/* -------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------------------------------- */
+
 router.post('/addColor', async (req, res) => {
   const { colorName } = req.body
+
   try {
-    if (colorName) {
-      connection.execute('INSERT INTO colors (color_name) VALUES (?)', [
-        colorName
-      ])
-      res.send('Color agregado correctamente')
-    } else {
-      throw new Error('Error en la consulta')
-    }
+    // Validate req.body
+    validateParams([colorName])
+
+    // Insert in db or return the existing data
+    connection.execute('INSERT INTO colors (color_name) VALUES (?)', [
+      colorName
+    ])
   } catch (e) {
-    res.send('Error en la consulta')
+    console.error(e)
+    res.status(400).send('Error en la consulta')
   }
 })
+
+/* -------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------------------------------- */
 
 router.post('/isLogged', (req, res) => {
   if (req.decoded) {
@@ -127,26 +152,23 @@ router.post('/isLogged', (req, res) => {
   }
 })
 
+/* -------------------------------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------------------------------- */
+
 router.post('/addCondition', async (req, res) => {
   const { condition } = req.body
+
   try {
-    if (condition) {
-      connection.execute(
-        'INSERT INTO conditions (`condition`) VALUES (?)',
-        [condition]
-      )
-      res.send('Condicion agregado correctamente')
-    } else {
-      throw new Error('Error en la consulta')
-    }
+    validateParams([condition])
+    validateStrings([condition])
+    connection.execute('INSERT INTO conditions (`condition`) VALUES (?)', [
+      condition
+    ])
+    res.send('Condicion agregado correctamente')
   } catch (e) {
-    res.send('Error en la consulta')
+    console.error(e)
+    res.status(400).send('Error en la consulta')
   }
 })
-
-// router.post('updateProduct', (req, res) => {
-//   const { price, stock } = req.body
-//   connection.execute('UPDATE list_products SET price=? WHERE id_product=?;', [])
-// })
 
 export default router
