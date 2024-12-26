@@ -1,7 +1,7 @@
 import express from 'express'
 import DbService from '../services/DbService.js'
 import connection from '../libs/db.js'
-import { validateStrings, validateParams, validateNumbers } from '../utils/validations.js'
+import { validateStrings, validateParams } from '../utils/validations.js'
 
 const dbManager = new DbService()
 const router = express.Router()
@@ -20,14 +20,18 @@ router.post('/addTypeProduct', async (req, res) => {
     validateStrings([typeProduct])
 
     // insert in db or return existing data
-    const data = dbManager.findTypeProduct(typeProduct)
+    const data = await dbManager.findRegister('type_product', [
+      {
+        columnName: 'type_product_name',
+        value: typeProduct
+      }
+    ])
     if (data[0]) {
       res.send(`El type product ${data[0]} ya existe`)
     } else {
-      connection.execute(
-        'INSERT INTO type_product (type_product_name) VALUES (?)',
-        [typeProduct]
-      )
+      dbManager.insertInDB('type_product', [
+        { columnName: 'type_product_name', value: typeProduct }
+      ])
       res.send('Success')
     }
   } catch (e) {
@@ -49,14 +53,18 @@ router.post('/addModel', async (req, res) => {
     validateStrings([model, description, idTypeProduct, units])
 
     // Insert in db or return the existing data
-    const data = await dbManager.findModel(model)
+    const data = await dbManager.findRegister('models', [
+      { columnName: 'name_model', value: model }
+    ])
     if (data[0]) {
       res.send('El model ya existe')
     } else {
-      connection.execute(
-        'INSERT INTO models (name_model, description, id_type_product, units) VALUES (?, ?, ?, ?)',
-        [model, description, idTypeProduct, units]
-      )
+      dbManager.insertInDB('models', [
+        { columnName: 'name_model', value: model },
+        { columnName: 'description', value: description },
+        { columnName: 'id_type_product', value: idTypeProduct },
+        { columnName: 'units', value: units }
+      ])
       res.send('model agregado correctamente')
     }
   } catch (e) {
@@ -77,10 +85,13 @@ router.post('/addProvider', async (req, res) => {
     // validate types
     validateStrings([website, tel, email, companyName])
 
-    await connection.execute(
-      'INSERT INTO providers (website, tel, email, company_name) VALUES (?, ?, ?, ?)',
-      [website, tel, email, companyName]
-    )
+    dbManager.insertInDB('providers', [
+      { columnName: 'website', value: website },
+      { columnName: 'tel', value: tel },
+      { columnName: 'email', value: email },
+      { columnName: 'company_name', value: companyName }
+    ])
+
     res.send('Operacion realizada exitosamente')
   } catch (e) {
     console.error(e)
@@ -100,19 +111,27 @@ router.post('/addProduct', async (req, res) => {
 
     // Validate types
     validateStrings([idColor, idProvider, idModel, isStock])
-    validateNumbers([stock, price])
 
     // Search register in db
-    const data = await dbManager.findProduct(idModel, idColor, idProvider)
+    const data = await dbManager.findRegister('list_products', [
+      { columnName: 'id_model', value: idModel },
+      { columnName: 'id_color', value: idColor },
+      { columnName: 'id_provider', value: idProvider },
+      { columnName: 'is_stock', value: isStock }
+    ])
 
     // Insert in db or return the existing data
     if (data[0]) {
       res.send(`El producto ${data[0]} ya existe`)
     } else {
-      await connection.execute(
-        'INSERT INTO list_products (id_model, id_color, id_provider, stock, price, is_stock) VALUES (?, ?, ?, ?, ?, ?)',
-        [idModel, idColor, idProvider, stock, price, isStock]
-      )
+      dbManager.insertInDB('providers', [
+        { columnName: 'id_model', value: idModel },
+        { columnName: 'id_color', value: idColor },
+        { columnName: 'id_provider', value: idProvider },
+        { columnName: 'stock', value: stock },
+        { columnName: 'price', value: price },
+        { columnName: 'is_stock', value: isStock }
+      ])
       res.send('Producto agregado correctamente')
     }
   } catch (e) {
@@ -161,8 +180,8 @@ router.post('/addCondition', async (req, res) => {
   try {
     validateParams([condition])
     validateStrings([condition])
-    connection.execute('INSERT INTO conditions (`condition`) VALUES (?)', [
-      condition
+    dbManager.insertInDB('conditions', [
+      { columnName: 'condition', value: condition }
     ])
     res.send('Condicion agregado correctamente')
   } catch (e) {
