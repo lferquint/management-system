@@ -1,6 +1,5 @@
 import express from 'express'
 import DbService from '../services/DbService.js'
-import connection from '../libs/db.js'
 import { validateStrings, validateParams } from '../utils/validations.js'
 
 const dbManager = new DbService()
@@ -85,14 +84,22 @@ router.post('/addProvider', async (req, res) => {
     // validate types
     validateStrings([website, tel, email, companyName])
 
-    dbManager.insertInDB('providers', [
-      { columnName: 'website', value: website },
-      { columnName: 'tel', value: tel },
-      { columnName: 'email', value: email },
+    // Insert in db or return the existing data
+    const data = await dbManager.findRegister('providers', [
       { columnName: 'company_name', value: companyName }
     ])
+    if (data[0]) {
+      dbManager.insertInDB('providers', [
+        { columnName: 'website', value: website },
+        { columnName: 'tel', value: tel },
+        { columnName: 'email', value: email },
+        { columnName: 'company_name', value: companyName }
+      ])
 
-    res.send('Operacion realizada exitosamente')
+      res.send('Operacion realizada exitosamente')
+    } else {
+      res.send('El provider ya existe')
+    }
   } catch (e) {
     console.error(e)
     res.send(400).send('Error en la peticion')
@@ -151,9 +158,15 @@ router.post('/addColor', async (req, res) => {
     validateParams([colorName])
 
     // Insert in db or return the existing data
-    connection.execute('INSERT INTO colors (color_name) VALUES (?)', [
-      colorName
+    const [data] = dbManager.findRegister('colors', [
+      { columnName: 'color_name', value: colorName }
     ])
+    if (data[0]) {
+      dbManager.insertInDB('colors', [
+        { columnName: 'color_name', value: colorName }
+      ])
+      res.send('Color agregado correctamente')
+    }
   } catch (e) {
     console.error(e)
     res.status(400).send('Error en la consulta')
@@ -178,12 +191,22 @@ router.post('/addCondition', async (req, res) => {
   const { condition } = req.body
 
   try {
+    // Validate req.body
     validateParams([condition])
     validateStrings([condition])
-    dbManager.insertInDB('conditions', [
+
+    // Insert in db or return the existing data
+    const [data] = dbManager.findRegister('conditions', [
       { columnName: 'condition', value: condition }
     ])
-    res.send('Condicion agregado correctamente')
+    if (data[0]) {
+      dbManager.insertInDB('conditions', [
+        { columnName: 'condition', value: condition }
+      ])
+      res.send('Condicion agregado correctamente')
+    } else {
+      res.send('La condition ya existe')
+    }
   } catch (e) {
     console.error(e)
     res.status(400).send('Error en la consulta')
