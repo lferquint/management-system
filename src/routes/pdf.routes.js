@@ -12,31 +12,21 @@ router.post('/generatePdf', async (req, res) => {
   // Create pdfManager
   const pdfManager = new PdfService(doc)
 
-  // Header on the document
+  // build basic structure
   pdfManager.addHeader()
-
-  // Introduction on the document
   pdfManager.addIntroduction(data.header)
-
-  // Add and calculate product quantities
   await pdfManager.addAmounts(data.products)
-
-  // Delivery time
   pdfManager.addDeliveryTime(data.deliveryTime)
-
-  // Conditions to sale
   pdfManager.addConditions(data.conditions)
-
-  // Signature
   pdfManager.addSignature(data.signature)
 
-  // Output
+  // config output
   doc.pipe(res)
   res.writeHead(200, {
     'Content-Type': 'application/pdf'
   })
 
-  // Finish document
+  // close document
   doc.end()
 })
 

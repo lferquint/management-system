@@ -1,17 +1,18 @@
-import { TypeError, RequestError } from '../errors/errors.js'
+import { ValidationError } from '../errors/errors.js'
 
 /* -------------------------------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------------------------------- */
 
 /**
- * validationStrings
- * @param {Object} [options] - StringsToValidate
+ * validateStrings
+ * @param {string[]} stringsToValidate
+ * @returns {void}
  */
-export function validateStrings(data) {
-  validateOneObj(data)
-  for (let i = 0; i < data.length; i++) {
-    if (typeof data[i] !== 'string') {
-      throw new TypeError(`${data} must be a string`)
+export function validateStrings(stringsToValidate) {
+  validateOneObj(stringsToValidate)
+  for (let i = 0; i < stringsToValidate.length; i++) {
+    if (typeof stringsToValidate[i] !== 'string') {
+      throw new ValidationError(`${stringsToValidate[i]} must be a string`)
     }
   }
 }
@@ -21,13 +22,13 @@ export function validateStrings(data) {
 
 /**
  * validationNumbers
- * @param {Object} [options] - NumbersToValidate
+ * @param {any[]} NumbersToValidate
  */
-export function validateNumbers(data) {
-  validateOneObj(data)
-  for (let i = 0; i < data.length; i++) {
-    if (typeof data[i] !== 'number') {
-      throw new TypeError(`${data} must be a number`)
+export function validateNumbers(NumbersToValidate) {
+  validateOneObj(NumbersToValidate)
+  for (let i = 0; i < NumbersToValidate.length; i++) {
+    if (typeof NumbersToValidate[i] !== 'number') {
+      throw new ValidationError(`${NumbersToValidate[i]} must be a number`)
     }
   }
 }
@@ -37,12 +38,12 @@ export function validateNumbers(data) {
 
 /**
  * validationObjs
- * @param {Object} [options] - ObjsToValidate
+ * @param {any[]} objsToValidate
  */
-export function validateObjs(data) {
-  validateOneObj(data)
-  for (let i = 0; i < data.length; i++) {
-    validateOneObj(data[i])
+export function validateObjs(objsToValidate) {
+  validateOneObj(objsToValidate)
+  for (let i = 0; i < objsToValidate.length; i++) {
+    validateOneObj(objsToValidate[i])
   }
 }
 
@@ -51,11 +52,11 @@ export function validateObjs(data) {
 
 /**
  * validationOneObj
- * @param {Object} [options] - ObjToValidate
+ * @param {any[]} ObjToValidate
  */
-export function validateOneObj(data) {
-  if (typeof data !== 'object') {
-    throw new TypeError(`${data} must be a obj/array`)
+export function validateOneObj(objToValidate) {
+  if (typeof objToValidate !== 'object') {
+    throw new ValidationError(`${objToValidate} must be a obj/array`)
   }
 }
 
@@ -64,13 +65,13 @@ export function validateOneObj(data) {
 
 /**
  * validationParams
- * @param {Object} [options] - ParametersToValidate
+ * @param {string[]} parametersToValidate
  */
-export function validateParams(data) {
-  validateOneObj(data)
-  for (let i = 0; i < data.length; i++) {
-    if (!data[i]) {
-      throw new RequestError('Request error')
+export function validateFalsyValues(parametersToValidate) {
+  validateOneObj(parametersToValidate)
+  for (let i = 0; i < parametersToValidate.length; i++) {
+    if (!parametersToValidate[i]) {
+      throw new ValidationError('The values must not be falsy')
     }
   }
 }

@@ -1,6 +1,6 @@
 import express from 'express'
 import DbService from '../services/DbService.js'
-import { validateStrings, validateParams } from '../utils/validations.js'
+import { validateStrings } from '../utils/validations.js'
 
 const dbManager = new DbService()
 const router = express.Router()
@@ -12,19 +12,21 @@ router.post('/addTypeProduct', async (req, res) => {
   const { typeProduct } = req.body
 
   try {
-    // validate req.body
-    validateParams([typeProduct])
-
     // validate types
     validateStrings([typeProduct])
 
     // insert in db or return existing data
-    const data = await dbManager.findRegister('type_product', [
-      {
-        columnName: 'type_product_name',
-        value: typeProduct
-      }
-    ])
+    const data = await dbManager.getRegisters(
+      'type_product',
+      ['*'],
+      [
+        {
+          columnName: 'type_product_name',
+          value: typeProduct
+        }
+      ]
+    )
+
     if (data[0]) {
       res.send(`El type product ${data[0]} ya existe`)
     } else {
@@ -45,16 +47,15 @@ router.post('/addTypeProduct', async (req, res) => {
 router.post('/addModel', async (req, res) => {
   const { model, description, idTypeProduct, units } = req.body
   try {
-    // validate req.body
-    validateParams([model, description, idTypeProduct, units])
-
     // validate types
     validateStrings([model, description, idTypeProduct, units])
 
     // Insert in db or return the existing data
-    const data = await dbManager.findRegister('models', [
-      { columnName: 'name_model', value: model }
-    ])
+    const data = await dbManager.getRegisters(
+      'models',
+      ['*'],
+      [{ columnName: 'name_model', value: model }]
+    )
     if (data[0]) {
       res.send('El model ya existe')
     } else {
@@ -78,16 +79,15 @@ router.post('/addModel', async (req, res) => {
 router.post('/addProvider', async (req, res) => {
   const { website, tel, email, companyName } = req.body
   try {
-    // validate req.body
-    validateParams([website, tel, email, companyName])
-
     // validate types
     validateStrings([website, tel, email, companyName])
 
     // Insert in db or return the existing data
-    const data = await dbManager.findRegister('providers', [
-      { columnName: 'company_name', value: companyName }
-    ])
+    const data = await dbManager.getRegisters(
+      'providers',
+      ['*'],
+      [{ columnName: 'company_name', value: companyName }]
+    )
     if (data[0]) {
       dbManager.insertInDB('providers', [
         { columnName: 'website', value: website },
@@ -113,19 +113,20 @@ router.post('/addProduct', async (req, res) => {
   const { stock, idColor, idProvider, price, idModel, isStock } = req.body
 
   try {
-    // Validate req.body
-    validateParams([stock, idColor, idProvider, price, idModel, isStock])
-
     // Validate types
     validateStrings([idColor, idProvider, idModel, isStock])
 
     // Search register in db
-    const data = await dbManager.findRegister('list_products', [
-      { columnName: 'id_model', value: idModel },
-      { columnName: 'id_color', value: idColor },
-      { columnName: 'id_provider', value: idProvider },
-      { columnName: 'is_stock', value: isStock }
-    ])
+    const data = await dbManager.getRegisters(
+      'list_products',
+      ['*'],
+      [
+        { columnName: 'id_model', value: idModel },
+        { columnName: 'id_color', value: idColor },
+        { columnName: 'id_provider', value: idProvider },
+        { columnName: 'is_stock', value: isStock }
+      ]
+    )
 
     // Insert in db or return the existing data
     if (data[0]) {
@@ -154,13 +155,12 @@ router.post('/addColor', async (req, res) => {
   const { colorName } = req.body
 
   try {
-    // Validate req.body
-    validateParams([colorName])
-
     // Insert in db or return the existing data
-    const [data] = dbManager.findRegister('colors', [
-      { columnName: 'color_name', value: colorName }
-    ])
+    const [data] = dbManager.getRegisters(
+      'colors',
+      ['*'],
+      [{ columnName: 'color_name', value: colorName }]
+    )
     if (data[0]) {
       dbManager.insertInDB('colors', [
         { columnName: 'color_name', value: colorName }
@@ -192,11 +192,10 @@ router.post('/addCondition', async (req, res) => {
 
   try {
     // Validate req.body
-    validateParams([condition])
     validateStrings([condition])
 
     // Insert in db or return the existing data
-    const [data] = dbManager.findRegister('conditions', [
+    const [data] = dbManager.getRegisters('conditions', ['*'], [
       { columnName: 'condition', value: condition }
     ])
     if (data[0]) {
