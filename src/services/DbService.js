@@ -22,9 +22,9 @@ class DbService {
         nameAllColumns = nameAllColumns + ', ' + registersToInsert[i].columnName
       }
     }
-    const allValuesArray = registersToInsert.map((register) => register.value)
+    const allValuesArray = registersToInsert.map((register) => `"${register.value}"`)
     const [data] = await connection.execute(
-      `INSERT INTO ${tableName} (${nameAllColumns}) VALUES (${cuestionMarks}) `,
+      `INSERT INTO ${tableName} (${tableName}.${nameAllColumns}) VALUES (${allValuesArray}) `,
       allValuesArray
     )
     return data
@@ -50,7 +50,7 @@ class DbService {
       if (i === 0) {
         conditionsQuery =
           conditionsQuery +
-          ` ${whereConditions[i].columnName}="${whereConditions[i].value}"`
+          ` ${tableName + '.'}${whereConditions[i].columnName}='${whereConditions[i].value}'`
       } else {
         conditionsQuery =
           conditionsQuery +

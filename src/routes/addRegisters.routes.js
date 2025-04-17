@@ -27,7 +27,7 @@ router.post('/addTypeProduct', async (req, res) => {
       ]
     )
 
-    if (data[0]) {
+    if (data[0][0]) {
       res.send(`El type product ${data[0]} ya existe`)
     } else {
       dbManager.insertInDB('type_product', [
@@ -56,7 +56,7 @@ router.post('/addModel', async (req, res) => {
       ['*'],
       [{ columnName: 'name_model', value: model }]
     )
-    if (data[0]) {
+    if (data[0][0]) {
       res.send('El model ya existe')
     } else {
       dbManager.insertInDB('models', [
@@ -88,7 +88,9 @@ router.post('/addProvider', async (req, res) => {
       ['*'],
       [{ columnName: 'company_name', value: companyName }]
     )
-    if (data[0]) {
+    if (data[0][0]) {
+      res.send('El provider ya existe')
+    } else {
       dbManager.insertInDB('providers', [
         { columnName: 'website', value: website },
         { columnName: 'tel', value: tel },
@@ -97,8 +99,6 @@ router.post('/addProvider', async (req, res) => {
       ])
 
       res.send('Operacion realizada exitosamente')
-    } else {
-      res.send('El provider ya existe')
     }
   } catch (e) {
     console.error(e)
@@ -129,10 +129,10 @@ router.post('/addProduct', async (req, res) => {
     )
 
     // Insert in db or return the existing data
-    if (data[0]) {
+    if (data[0][0]) {
       res.send(`El producto ${data[0]} ya existe`)
     } else {
-      dbManager.insertInDB('providers', [
+      dbManager.insertInDB('list_products', [
         { columnName: 'id_model', value: idModel },
         { columnName: 'id_color', value: idColor },
         { columnName: 'id_provider', value: idProvider },
@@ -156,12 +156,12 @@ router.post('/addColor', async (req, res) => {
 
   try {
     // Insert in db or return the existing data
-    const [data] = dbManager.getRegisters(
+    const [data] = await dbManager.getRegisters(
       'colors',
       ['*'],
       [{ columnName: 'color_name', value: colorName }]
     )
-    if (data[0]) {
+    if (!data[0]) {
       dbManager.insertInDB('colors', [
         { columnName: 'color_name', value: colorName }
       ])
@@ -195,16 +195,17 @@ router.post('/addCondition', async (req, res) => {
     validateStrings([condition])
 
     // Insert in db or return the existing data
-    const [data] = dbManager.getRegisters('conditions', ['*'], [
+    const [data] = await dbManager.getRegisters('conditions', ['*'], [
       { columnName: 'condition', value: condition }
     ])
+    console.log(data)
     if (data[0]) {
+      res.send('La condition ya existe')
+    } else {
       dbManager.insertInDB('conditions', [
         { columnName: 'condition', value: condition }
       ])
       res.send('Condicion agregado correctamente')
-    } else {
-      res.send('La condition ya existe')
     }
   } catch (e) {
     console.error(e)

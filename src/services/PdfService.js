@@ -116,7 +116,7 @@ class PdfService {
     this.addText(doDate(new Date()), { align: 'right' }) // Date
     this.pdfDocument.moveDown().moveDown().moveDown()
     this.addText(
-      objIntroduction.introductionMessage || 'Default message introduction'
+      objIntroduction.introductionMessage || 'Por este conducto ponemos a su atenta consideracion la cotizacion de los productos y/o servicios solicitados. '
     ) // Introducion message
     this.pdfDocument.moveDown()
     this.addText(`Obra: ${objIntroduction.place || this.pendingMessage}`) // Project address
@@ -291,7 +291,7 @@ class PdfService {
     // Render conditions
     this.addNote(titleConditions || 'CONDICIONES DE VENTA:')
     for (let i = 0; i < conditions.length; i++) {
-      this.addNote(conditions[i])
+      this.addNote(`${conditions[i]}.`)
     }
   }
 

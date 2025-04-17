@@ -45,14 +45,14 @@ router.get('/api/getColorsProduct/:idProduct', async (req, res) => {
 /* -------------------------------------------------------------------------------------------------- */
 /* -------------------------------------------------------------------------------------------------- */
 
-router.get('/api/infoAboutProduct/:idModel/:color', async (req, res) => {
+router.get('/api/infoAboutProduct/:idModel/:idColor', async (req, res) => {
   const { idModel } = req.params
-  const { color } = req.params
+  const { idColor } = req.params
 
   // get registers
   const [results] = await connection.execute(
-    'SELECT list_products.price, models.description, models.units FROM list_products JOIN models ON list_products.id_model=models.id_model JOIN colors ON colors.id_color=list_products.id_color WHERE models.id_model=? AND colors.color_name=?;',
-    [idModel, color]
+    'SELECT list_products.price, models.description, models.units FROM list_products JOIN models ON list_products.id_model=models.id_model JOIN colors ON colors.id_color=list_products.id_color WHERE models.id_model=? AND colors.id_color=?;',
+    [idModel, idColor]
   )
 
   res.json(results)

@@ -108,7 +108,7 @@ router.post('/deleteTypeProduct/:idTypeProduct', async (req, res) => {
 router.post('/deleteModel/:idModel', async (req, res) => {
   const { idModel } = req.params
   try {
-    validateFalsyValues(idModel)
+    validateFalsyValues([idModel])
 
     await dbManager.deleteRegisters('list_products', [
       { columnName: 'id_model', value: idModel }
